@@ -1,0 +1,21 @@
+syntax = "proto3";
+package hobord.redirect;
+option go_package = "redirect";
+
+service DRedirectService {
+  rpc GetRedirection(GetRedirectionMessage) returns (GetRedirectionResponse) {}
+}
+
+message GetRedirectionMessage {
+  string sessionID = 1;
+  string requestID = 2;
+  string url = 3;
+  string httpMethod = 4;
+}
+
+message GetRedirectionResponse {
+  string location = 1;
+  int32 httpStatusCode = 3;
+}
+
+
