@@ -2,21 +2,31 @@ package redirect
 
 import (
 	"context"
-	"log"
 	// "net/url"
 	"testing"
 )
 
+func TestGetRedirection(t *testing.T) {
+	msg := &GetRedirectionMessage{
+		Url: "http://index.hu/path/subpath/?foo=bar&toremove=xyz&other=ok#bookmark",
+	}
+	grpServer := &GrpcServer{}
+	ctx := context.Context(context.Background())
+	result, err := grpServer.GetRedirection(ctx, msg)
+	if err != nil {
+		t.Errorf("I Got %v", err)
+	}
+	t.Logf("Result: %v", result.Location)
+}
+
 func TestCalculateRedirection(t *testing.T) {
 	msg := &GetRedirectionMessage{
-		SessionID: "in.SessionID",
-		RequestID: "in.RequestID",
-		Url:       "http://index.hu?foo=bar&toremove=xyz",
+		Url: "http://index.hu/path/subpath/?foo=bar&toremove=xyz&other=ok#bookmark",
 	}
 	ctx := context.Context(context.Background())
 	result, err := CalculateRedirection(ctx, msg)
 	if err != nil {
 		t.Errorf("I Got %v", err)
 	}
-	log.Printf("result %v", result)
+	t.Logf("Result: %v", result.Location)
 }

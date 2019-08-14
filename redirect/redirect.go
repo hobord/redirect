@@ -16,22 +16,30 @@ func CreateGrpcServer() *GrpcServer {
 func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	var response *GetRedirectionResponse
 	response, err := CalculateRedirection(ctx, in)
+
+	peeled, err := ParamPeeling(ctx, &GetRedirectionMessage{
+		Url: response.Location,
+	})
+	if err != nil {
+		return response, err
+	}
+	response = peeled
+
 	return response, err
 }
 
 func CalculateRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	//make business logic
-	var err error
 	response := &GetRedirectionResponse{
 		Location:       in.Url,
 		HttpStatusCode: http.StatusTemporaryRedirect,
 	}
 
-	peeled, err := ParamPeeling(ctx, in)
-	if err != nil {
-		return response, err
-	}
-	response = peeled
+	// peeled, err := ParamPeeling(ctx, in)
+	// if err != nil {
+	// 	return response, err
+	// }
+	// response = peeled
 
 	// maybe want to make an other redirection
 	// check itxxxz
