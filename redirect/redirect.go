@@ -2,6 +2,7 @@ package redirect
 
 import (
 	"context"
+	"net/http"
 	"net/url"
 )
 
@@ -14,33 +15,43 @@ func CreateGrpcServer() *GrpcServer {
 
 func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	var response *GetRedirectionResponse
-	response, err := calculateRedirection(ctx, in)
+	response, err := CalculateRedirection(ctx, in)
 	return response, err
 }
 
-func calculateRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
+func CalculateRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	//make business logic
-	reponse := &GetRedirectionResponse{}
+	var err error
+	response := &GetRedirectionResponse{
+		Location:       in.Url,
+		HttpStatusCode: http.StatusTemporaryRedirect,
+	}
+
+	peeled, err := ParamPeeling(ctx, in)
+	if err != nil {
+		return response, err
+	}
+	response = peeled
 
 	// maybe want to make an other redirection
-	redirectTo := &GetRedirectionMessage{
-		SessionID:  in.SessionID,
-		RequestID:  in.RequestID,
-		Url:        reponse.Location,
-		HttpMethod: in.HttpMethod}
-	// check it
-	r, err := calculateRedirection(ctx, redirectTo)
-	if err != nil {
-		return reponse, err
-	}
-	if r.Location != in.Url {
-		return r, nil
-	}
+	// check itxxxz
+	if response.Location != in.Url {
+		redirectTo := &GetRedirectionMessage{
+			SessionID:  in.SessionID,
+			RequestID:  in.RequestID,
+			Url:        response.Location,
+			HttpMethod: in.HttpMethod}
 
-	return reponse, nil
+		r, err := CalculateRedirection(ctx, redirectTo)
+		if err != nil {
+			return response, err
+		}
+		response = r
+	}
+	return response, nil
 }
 
-func paramPeeling(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
+func ParamPeeling(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	//make business logic
 	reponse := &GetRedirectionResponse{}
 	// fake peeling logic
@@ -55,7 +66,7 @@ func paramPeeling(ctx context.Context, in *GetRedirectionMessage) (*GetRedirecti
 		if u.User.String() != "" {
 			newURLStr = newURLStr + u.User.String() + "@"
 		}
-		newURLStr = newURLStr + u.Host + "/"
+		newURLStr = newURLStr + u.Host
 		newURLStr = newURLStr + u.Path
 
 		query := u.Query()
@@ -65,6 +76,7 @@ func paramPeeling(ctx context.Context, in *GetRedirectionMessage) (*GetRedirecti
 			}
 		}
 		u.RawQuery = query.Encode()
+		newURLStr = newURLStr + "?" + u.RawQuery
 
 		if u.Fragment != "" {
 			newURLStr = newURLStr + "#" + u.Fragment
