@@ -8,11 +8,13 @@ import (
 
 type GrpcServer struct{}
 
+// CreateGrpcServer make an instace of GrpcServer
 func CreateGrpcServer() *GrpcServer {
 	impl := &GrpcServer{}
 	return impl
 }
 
+// GetRedirection is implementing RedirectService rcp function
 func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
 	sessionValues := &session.Values{}
 	redirections := make(map[string]int32)
