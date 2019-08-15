@@ -1,0 +1,31 @@
+config:
+  - host: "*.888casino.com"
+    rules: 
+      - type: CustomLogic
+        httpMethods: [GET, POST]
+        HttpHeadersKeyExists: ["x-forwarder"]
+        expression: "/http(s?):\/\/site\.com\/(.*)/gmi"
+        logicName: "customLogic"
+        defaultHttpStatusCode: 302
+      - type: RuleRegexp
+        expression: "/http(s?):\/\/site\.com\/(.*)/gmi"
+        target: "https://site.com/$2"
+        defaultHttpStatusCode: 302
+      - type: RuleRegexp
+        expression: "/http(s?):\/\/site2\.com\/(.*)/gmi"
+        target: "https://site.com/$2"
+        defaultHttpStatusCode: 302
+      - type: RuleHashTable
+        file: "file.csv"
+        defaultHttpStatusCode: 302
+        map: 
+          - src: ""
+            target: ""
+            HttpStatusCode: 302
+          - src: ""
+            target: ""
+            HttpStatusCode: 302
+          - src: ""
+            target: ""
+          - src: ""
+            target: ""
