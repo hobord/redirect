@@ -5,10 +5,7 @@
 // docker run -p 6379:6379 --name redis-redisjson redislabs/rejson:latest
 grpcurl.exe -plaintext localhost:50051 list
 
-grpcurl -plaintext -d '{"ttl":10}' localhost:50051 hobord.session.DSessionService/CreateSession
-grpcurl -plaintext -d '{"ttl":0}' localhost:50051 hobord.session.DSessionService/CreateSession
-grpcurl -plaintext -d '{"id":"8f60aaef-a0bd-4c55-ab49-00c4ed5a4091", "key":"foo", "value": {"numberValue": 15}}' localhost:50051 hobord.session.DSessionService/AddValueToSession
-grpcurl -plaintext -d '{"id":"8f60aaef-a0bd-4c55-ab49-00c4ed5a4091"}'  localhost:50051 hobord.session.DSessionService/GetSession
+grpcurl -plaintext -d '{"url": "http://index.hu/path/subpath/?foo=bar&toremove=xyz&other=ok#bookmark"}' localhost:50051 github.com.hobord.redirect.RedirectService/GetRedirection
 
 */
 
@@ -41,7 +38,7 @@ func main() {
 	reflection.Register(s)
 
 	srv := pb.CreateGrpcServer()
-	pb.RegisterDRedirectServiceServer(s, srv)
+	pb.RegisterRedirectServiceServer(s, srv)
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

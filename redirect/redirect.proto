@@ -1,8 +1,8 @@
 syntax = "proto3";
-package hobord.redirect;
+package github.com.hobord.redirect;
 option go_package = "redirect";
 
-service DRedirectService {
+service RedirectService {
   rpc GetRedirection(GetRedirectionMessage) returns (GetRedirectionResponse) {}
 }
 
@@ -11,6 +11,7 @@ message GetRedirectionMessage {
   string requestID = 2;
   string url = 3;
   string httpMethod = 4;
+  map<string, string> headers = 5;
 }
 
 message GetRedirectionResponse {

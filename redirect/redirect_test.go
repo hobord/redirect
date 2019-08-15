@@ -2,8 +2,9 @@ package redirect
 
 import (
 	"context"
-	// "net/url"
 	"testing"
+
+	"github.com/hobord/infra/session"
 )
 
 func TestGetRedirection(t *testing.T) {
@@ -20,11 +21,14 @@ func TestGetRedirection(t *testing.T) {
 }
 
 func TestCalculateRedirection(t *testing.T) {
-	msg := &GetRedirectionMessage{
+	ctx := context.Context(context.Background())
+	request := Request{
 		Url: "http://index.hu/path/subpath/?foo=bar&toremove=xyz&other=ok#bookmark",
 	}
-	ctx := context.Context(context.Background())
-	result, err := CalculateRedirection(ctx, msg)
+	sessionValues := &session.Values{}
+	redirections := make(map[string]int32)
+
+	result, err := CalculateRedirections(ctx, request, sessionValues, redirections)
 	if err != nil {
 		t.Errorf("I Got %v", err)
 	}

@@ -4,99 +4,83 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+
+	session "github.com/hobord/infra/session"
 )
 
-type GrpcServer struct{}
-
-func CreateGrpcServer() *GrpcServer {
-	impl := &GrpcServer{}
-	return impl
+type Request struct {
+	Url         string
+	HttpMethod  string
+	HttpHeaders map[string]string
+	RequestID   string
+	SessionID   string
 }
 
-func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
-	var response *GetRedirectionResponse
-	response, err := CalculateRedirection(ctx, in)
+// CalculateRedirections make recursive the redirections, with infinitive redirect loop detection.
+func CalculateRedirections(ctx context.Context, request Request, sessionValues *session.Values, redirections map[string]int32) (GetRedirectionResponse, error) {
+	//make business logic
+	response := GetRedirectionResponse{
+		Location:       request.Url,
+		HttpStatusCode: http.StatusOK,
+	}
 
-	peeled, err := ParamPeeling(ctx, &GetRedirectionMessage{
-		Url: response.Location,
-	})
+	// Apply all rules
+	newRedirection, err := applyRedirectionRules(ctx, request, sessionValues)
+	if err != nil {
+		return response, nil // TODO: it is ok?
+	}
+
+	if newRedirection.HttpStatusCode == http.StatusOK {
+		return response, nil
+	}
+
+	// infinitive redirect loop detection
+	if httpStatusCode, ok := redirections[newRedirection.Location]; ok {
+		if httpStatusCode == newRedirection.HttpStatusCode {
+			return response, nil
+		}
+	}
+	redirections[newRedirection.Location] = newRedirection.HttpStatusCode
+	response = newRedirection
+
+	// We have changes, lets make a new loop
+	redirectTo := Request{
+		SessionID:  request.SessionID,
+		RequestID:  request.RequestID,
+		Url:        response.Location,
+		HttpMethod: request.HttpMethod}
+
+	r, err := CalculateRedirections(ctx, redirectTo, sessionValues, redirections)
 	if err != nil {
 		return response, err
 	}
-	response = peeled
+	response = r
 
-	return response, err
-}
-
-func CalculateRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
-	//make business logic
-	response := &GetRedirectionResponse{
-		Location:       in.Url,
-		HttpStatusCode: http.StatusTemporaryRedirect,
-	}
-
-	// peeled, err := ParamPeeling(ctx, in)
-	// if err != nil {
-	// 	return response, err
-	// }
-	// response = peeled
-
-	// maybe want to make an other redirection
-	// check itxxxz
-	if response.Location != in.Url {
-		redirectTo := &GetRedirectionMessage{
-			SessionID:  in.SessionID,
-			RequestID:  in.RequestID,
-			Url:        response.Location,
-			HttpMethod: in.HttpMethod}
-
-		r, err := CalculateRedirection(ctx, redirectTo)
-		if err != nil {
-			return response, err
-		}
-		response = r
-	}
 	return response, nil
 }
 
-func ParamPeeling(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
-	//make business logic
-	reponse := &GetRedirectionResponse{}
-	// fake peeling logic
+// applyRedirectionRules is apply the redirection rules
+func applyRedirectionRules(ctx context.Context, request Request, sessionValues *session.Values) (GetRedirectionResponse, error) {
+	response := GetRedirectionResponse{
+		Location:       request.Url,
+		HttpStatusCode: http.StatusOK,
+	}
 
-	u, err := url.Parse(in.Url)
+	u, err := url.Parse(request.Url)
 	if err != nil {
-		return reponse, err
+		return response, err
 	}
-	newURLStr := in.Url
-	if u.RawQuery != "" {
-		newURLStr = u.Scheme + "://"
-		if u.User.String() != "" {
-			newURLStr = newURLStr + u.User.String() + "@"
-		}
-		newURLStr = newURLStr + u.Host
-		newURLStr = newURLStr + u.Path
 
-		query := u.Query()
-		for key := range query {
-			if parampeelingKeyCheck(key, u) == true {
-				delete(query, key)
-			}
-		}
-		u.RawQuery = query.Encode()
-		newURLStr = newURLStr + "?" + u.RawQuery
-
-		if u.Fragment != "" {
-			newURLStr = newURLStr + "#" + u.Fragment
-		}
+	// TODO: make businesslogic to here
+	if u.Host == "index.hu" {
+		u.Host = "444.hu"
+	} else if u.Host == "444.hu" {
+		u.Host = "888.hu"
 	}
-	reponse.Location = newURLStr
-	return reponse, nil
-}
+	// END of businesslogic
+	response.Location = u.String()
+	response.HttpStatusCode = http.StatusTemporaryRedirect
+	// END of businesslogic
 
-func parampeelingKeyCheck(key string, u *url.URL) bool {
-	if key == "toremove" {
-		return true
-	}
-	return false
+	return response, nil
 }
