@@ -7,7 +7,7 @@ import (
 )
 
 // ParamPeeling is peeling the specific url query parameters
-func ParamPeeling(ctx context.Context, request Request) GetRedirectionResponse {
+func ParamPeeling(ctx context.Context, configState *RedirectionConfigState, request Request) GetRedirectionResponse {
 	response := GetRedirectionResponse{}
 
 	u, err := url.Parse(request.Url)

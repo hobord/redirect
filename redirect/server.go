@@ -6,7 +6,10 @@ import (
 	session "github.com/hobord/infra/session"
 )
 
-type GrpcServer struct{}
+// GrpcServer is base struct
+type GrpcServer struct {
+	configState *RedirectionConfigState
+}
 
 // CreateGrpcServer make an instace of GrpcServer
 func CreateGrpcServer() *GrpcServer {
@@ -27,11 +30,11 @@ func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessa
 		SessionID:   in.SessionID,
 	}
 
-	response, err := CalculateRedirections(ctx, request, sessionValues, redirections)
+	response, err := CalculateRedirections(ctx, s.configState, request, sessionValues, redirections)
 	if err != nil {
 		return &response, err
 	}
-	r := ParamPeeling(ctx, Request{
+	r := ParamPeeling(ctx, s.configState, Request{
 		Url:         response.Location,
 		HttpMethod:  in.HttpMethod,
 		HttpHeaders: in.Headers,

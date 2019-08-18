@@ -17,7 +17,7 @@ type Request struct {
 }
 
 // CalculateRedirections make recursive the redirections, with infinitive redirect loop detection.
-func CalculateRedirections(ctx context.Context, request Request, sessionValues *session.Values, redirections map[string]int32) (GetRedirectionResponse, error) {
+func CalculateRedirections(ctx context.Context, configState *RedirectionConfigState, request Request, sessionValues *session.Values, redirections map[string]int32) (GetRedirectionResponse, error) {
 	//make business logic
 	response := GetRedirectionResponse{
 		Location:       request.Url,
@@ -25,7 +25,7 @@ func CalculateRedirections(ctx context.Context, request Request, sessionValues *
 	}
 
 	// Apply all rules
-	newRedirection, err := applyRedirectionRules(ctx, request, sessionValues)
+	newRedirection, err := applyRedirectionRules(ctx, configState, request, sessionValues)
 	if err != nil {
 		return response, nil // TODO: it is ok?
 	}
@@ -51,7 +51,7 @@ func CalculateRedirections(ctx context.Context, request Request, sessionValues *
 		HttpHeaders: request.HttpHeaders,
 		HttpMethod:  request.HttpMethod}
 
-	r, err := CalculateRedirections(ctx, redirectTo, sessionValues, redirections)
+	r, err := CalculateRedirections(ctx, configState, redirectTo, sessionValues, redirections)
 	if err != nil {
 		return response, err
 	}
@@ -61,7 +61,7 @@ func CalculateRedirections(ctx context.Context, request Request, sessionValues *
 }
 
 // applyRedirectionRules is apply the redirection rules
-func applyRedirectionRules(ctx context.Context, request Request, sessionValues *session.Values) (GetRedirectionResponse, error) {
+func applyRedirectionRules(ctx context.Context, configState *RedirectionConfigState, request Request, sessionValues *session.Values) (GetRedirectionResponse, error) {
 	response := GetRedirectionResponse{
 		Location:       request.Url,
 		HttpStatusCode: http.StatusOK,
@@ -81,60 +81,41 @@ func applyRedirectionRules(ctx context.Context, request Request, sessionValues *
 	response.Location = u.String()
 	response.HttpStatusCode = http.StatusTemporaryRedirect
 
-	// TODO: TEST IT
-	if rules, ok := hostsRules[u.Host]; ok {
-		for _, rule := range rules {
-			switch rule.Type {
-			case RuleHashTable:
-				if rule.DefaultHTTPStatusCode != 0 {
-					response.HttpStatusCode = rule.DefaultHTTPStatusCode
-				}
-				if hashRule, ok := rule.HasmapRules[request.Url]; ok {
-					response.Location = hashRule.Target
-					if hashRule.HTTPStatusCode != 0 {
-						response.HttpStatusCode = hashRule.HTTPStatusCode
+	if host, ok := configState.RedirectionHosts[u.Host]; ok {
+		if rules, ok := host[u.Scheme]; ok {
+			for _, rule := range rules {
+				switch rule.Type {
+				case "Hash":
+					if redirectTo, found := rule.TargetsByURL[u.Host]; found {
+						response.Location = redirectTo.Target
+						if redirectTo.HTTPStatusCode > 0 {
+							response.HttpStatusCode = redirectTo.HTTPStatusCode
+						} else {
+							response.HttpStatusCode = rule.HTTPStatusCode
+						}
+						goto End
+					}
+				case "Regex":
+					if rule.Regexp.MatchString(u.String()) {
+						response.Location = rule.Target
+						response.HttpStatusCode = rule.HTTPStatusCode
+						goto End
+					}
+				case "CustomLogic":
+					switch rule.LogicName {
+					case "condition":
+						// r = functionName(ctx, config, request, sessionValues)
+						// if r.HttpStatusCode != 200 {
+						// 	response = r
+						//   	goto End
+						// }
 					}
 				}
-			case RuleRegexp:
-			case CustomLogic:
 			}
 		}
 	}
-
+End:
 	// END of businesslogic
 
 	return response, nil
-}
-
-type RuleType int
-
-const (
-	RuleRegexp RuleType = iota
-	RuleHashTable
-	CustomLogic
-)
-
-type HashRule struct {
-	Target         string
-	HTTPStatusCode int32
-}
-type HashRules map[string]HashRule
-
-type Rule struct {
-	Type                  RuleType
-	Methods               []string
-	HTTPHeaders           []string
-	Expression            string
-	LogicName             string
-	DefaultHTTPStatusCode int32
-	FilePath              string
-	HasmapRules           HashRules
-}
-type OrderedRules []Rule
-type HostsRules map[string]OrderedRules
-
-var hostsRules HostsRules
-
-func init() {
-	hostsRules = make(HostsRules)
 }

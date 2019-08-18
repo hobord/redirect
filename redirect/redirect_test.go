@@ -57,12 +57,13 @@ func TestCalculateRedirection(t *testing.T) {
 	}
 	for _, testcase := range cases {
 		ctx := context.Context(context.Background())
+		config := &RedirectionServiceConfig{}
 		request := Request{
 			Url: testcase.urlstr,
 		}
 		sessionValues := &session.Values{}
 		redirections := make(map[string]int32)
-		result, err := CalculateRedirections(ctx, request, sessionValues, redirections)
+		result, err := CalculateRedirections(ctx, config, request, sessionValues, redirections)
 		if err != nil {
 			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
 		}

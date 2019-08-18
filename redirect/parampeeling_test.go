@@ -93,11 +93,12 @@ func TestParamPeeling(t *testing.T) {
 	}
 
 	for _, testcase := range cases {
+		config := &RedirectionServiceConfig{}
 		ctx := context.Context(context.Background())
 		request := Request{
 			Url: testcase.url,
 		}
-		result := ParamPeeling(ctx, request)
+		result := ParamPeeling(ctx, config, request)
 		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
 			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
 		}
