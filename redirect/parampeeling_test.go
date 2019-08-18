@@ -1,5 +1,6 @@
-package redirect
 
+package redirect
+/*
 import (
 	"context"
 	"net/url"
@@ -108,3 +109,4 @@ func TestParamPeeling(t *testing.T) {
 		}
 	}
 }
+*/

@@ -13,8 +13,14 @@ type GrpcServer struct {
 
 // CreateGrpcServer make an instace of GrpcServer
 func CreateGrpcServer() *GrpcServer {
-	impl := &GrpcServer{}
-	return impl
+	configState := &RedirectionConfigState{}
+	configState.loadConfigs("")
+
+	srv := &GrpcServer{
+		configState: configState,
+	}
+
+	return srv
 }
 
 // GetRedirection is implementing RedirectService rcp function

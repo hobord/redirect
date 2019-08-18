@@ -2,7 +2,7 @@ package redirect
 
 import (
 	"encoding/csv"
-	fmt "fmt"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,134 +12,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-var validID = regexp.MustCompile(`^[a-z]+\[[0-9]+\]$`)
-
-type RedirectionServiceConfig struct {
-	APIVersion string       `yaml:"apiVersion"` // RedirectionService/v1
-	Kind       string       `yaml:"kind"`       // RedirectionServiceConfig
-	Metadata   confMetadata `yaml:"metadata"`
-	Spec       struct {
-		ParamPeeling []struct {
-			Host       string                 `yaml:"host"`
-			Protocols  []string               `yaml:"protocols,omitempty"`
-			ConfigName string                 `yaml:"configName,omitempty"`
-			Spec       configParamPeelingSpec `yaml:"spec,omitempty"`
-		} `yaml:"paramPeeling,omitempty"`
-		Redirections []struct {
-			Host       string                `yaml:"host"`
-			Protocols  []string              `yaml:"protocols,omitempty"`
-			ConfigName string                `yaml:"configName,omitempty"`
-			Spec       configRedirectionSpec `yaml:"spec,omitempty"`
-		} `yaml:"redirections,omitempty"`
-		RedirectionHostHasmap map[string]struct {
-			Protocols []string
-			Spec      configRedirectionSpec
+func (configState *RedirectionConfigState) loadConfigs(root string) {
+	if root == "" {
+		root = os.Getenv("COFIG_DIR")
+		if root == "" {
+			root = "config"
 		}
-	} `yaml:"spec"`
-}
-type confMetadata struct {
-	Name string `yaml:"name"`
-}
-
-type ParamPeelingConfig struct {
-	APIVersion string                 `yaml:"apiVersion"` // RedirectionService/v1
-	Kind       string                 `yaml:"kind"`       // ParampeelingConfig
-	Metadata   confMetadata           `yaml:"metadata"`
-	Spec       configParamPeelingSpec `yaml:"spec,omitempty"`
-}
-
-type configParamPeelingSpec struct {
-	Params []string `yaml:"params"`
-}
-
-type RedirectionsConfig struct {
-	APIVersion string                `yaml:"apiVersion"` // RedirectionService/v1
-	Kind       string                `yaml:"kind"`       // RedirectionsConfig
-	Metadata   confMetadata          `yaml:"metadata"`
-	Spec       configRedirectionSpec `yaml:"spec,omitempty"`
-}
-
-type configRedirectionSpec struct {
-	Rules []struct {
-		Type           string   `yaml:"type"`
-		HTTPMethods    []string `yaml:"httpMethods,omitempty"`
-		FileURL        string   `yaml:"fileUrl,omitempty"`
-		HTTPStatusCode int32    `yaml:"httpStatusCode,omitempty"`
-		HashMap        map[string]struct {
-			Target         string `yaml:target,omitempty`
-			HTTPStatusCode int32  `yaml:httpStatusCode,omitempty`
-		} `yaml: "hasmap,omitempty"`
-		LogicName  string         `yaml:"logicName,omitempty"`
-		Expression string         `yaml:"expression,omitempty"`
-		Regexp     *regexp.Regexp `yaml:"-"`
-		Target     string         `yaml:target,omitempty`
-	} `yaml:"rules,omitempty"`
-}
-
-// func (c *RedirectionServiceConfig) GetConf() *RedirectionServiceConfig {
-
-// 	yamlFile, err := ioutil.ReadFile("../config.yml")
-// 	if err != nil {
-// 		log.Printf("yamlFile.Get err   #%v ", err)
-// 	}
-// 	err = yaml.Unmarshal(yamlFile, c)
-// 	if err != nil {
-// 		log.Fatalf("Unmarshal: %v", err)
-// 	}
-
-// 	return c
-// }
-
-// func (c *ParamPeelingConfig) GetConf(fileName string) *ParamPeelingConfig {
-// 	yamlFile, err := ioutil.ReadFile(fileName)
-// 	if err != nil {
-// 		log.Printf("yamlFile.Get err   #%v ", err)
-// 	}
-// 	err = yaml.Unmarshal(yamlFile, c)
-// 	if err != nil {
-// 		log.Fatalf("Unmarshal: %v", err)
-// 	}
-
-// 	return c
-// }
-
-// func (c *RedirectionsConfig) GetConf(fileName string) *RedirectionsConfig {
-// 	yamlFile, err := ioutil.ReadFile(fileName)
-// 	if err != nil {
-// 		log.Printf("yamlFile.Get err   #%v ", err)
-// 	}
-// 	err = yaml.Unmarshal(yamlFile, c)
-// 	if err != nil {
-// 		log.Fatalf("Unmarshal: %v", err)
-// 	}
-
-// 	return c
-// }
-
-type configstore struct {
-	Main struct {
-		viper *viper.Viper
-		cfg   *RedirectionServiceConfig
 	}
-	ParamPeelingConfigs map[string]struct {
-		viper *viper.Viper
-		cfg   *ParamPeelingConfig
-	}
-	RedirectionsConfigs map[string]struct {
-		viper *viper.Viper
-		cfg   *RedirectionsConfig
-	}
-}
-
-func (cst *configstore) LoadConfigs(root string) {
-	cst.ParamPeelingConfigs = make(map[string]struct {
-		viper *viper.Viper
-		cfg   *ParamPeelingConfig
-	})
-	cst.RedirectionsConfigs = make(map[string]struct {
-		viper *viper.Viper
-		cfg   *RedirectionsConfig
-	})
 
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -166,143 +45,145 @@ func (cst *configstore) LoadConfigs(root string) {
 		}
 
 		// var cfg interface{}
-
+		APIVersion := v.GetString("apiVersion")
 		cfgKind := v.GetString("kind")
-		cfgName := v.GetString("metadata.name")
+
+		if APIVersion != "RedirectionService/v1" {
+			continue
+		}
 		switch cfgKind {
-		case "RedirectionServiceConfig":
-			cfg := &RedirectionServiceConfig{}
-			err = v.Unmarshal(&cfg)
-			if err != nil {
-				log.Fatalf("unable to decode into struct, %v", err)
-			}
-			cst.Main.viper = v
-			cst.Main.cfg = cfg
 		case "ParampeelingConfig":
-			cfg := &ParamPeelingConfig{}
-			err = v.Unmarshal(&cfg)
-			if err != nil {
-				log.Fatalf("unable to decode into struct, %v", err)
-			}
-			cst.ParamPeelingConfigs[cfgName] = struct {
-				viper *viper.Viper
-				cfg   *ParamPeelingConfig
-			}{
-				viper: v,
-				cfg:   cfg,
-			}
+			configState.parampeelingConfigLoader(v)
 		case "RedirectionsConfig":
-			cfg := &RedirectionsConfig{}
-			err = v.Unmarshal(&cfg)
-			if err != nil {
-				log.Fatalf("unable to decode into struct, %v", err)
-			}
-			cst.RedirectionsConfigs[cfgName] = struct {
-				viper *viper.Viper
-				cfg   *RedirectionsConfig
-			}{
-				viper: v,
-				cfg:   cfg,
-			}
+			configState.redirectionsConfigLoader(v)
 		}
-
 	}
 
-	cst.ParseConfigs()
 }
 
-func (cst *configstore) ParseConfigs() {
-	for i, c := range cst.Main.cfg.Spec.ParamPeeling {
-		if cfg, ok := cst.ParamPeelingConfigs[c.ConfigName]; ok {
-			cst.Main.cfg.Spec.ParamPeeling[i].Spec = cfg.cfg.Spec
-		}
+func (configState *RedirectionConfigState) parampeelingConfigLoader(v *viper.Viper) {
+	cfg := &ParamPeelingConfigYaml{}
+	err := v.Unmarshal(&cfg)
+	if err != nil {
+		// log.Fatalf("unable to decode into struct, %v", err)
+		// TODO: error handling
+		return
 	}
-
-	for i, c := range cst.Main.cfg.Spec.Redirections {
-		if cfg, ok := cst.RedirectionsConfigs[c.ConfigName]; ok {
-			cst.Main.cfg.Spec.Redirections[i].Spec = cfg.cfg.Spec
+	for _, host := range cfg.Spec.Hosts {
+		var protocols []string
+		if len(cfg.Spec.Protocols) > 0 {
+			protocols = cfg.Spec.Protocols
+		} else {
+			protocols = []string{"http", "https"}
 		}
-	}
 
-	cst.Main.cfg.Spec.RedirectionHostHasmap = make(map[string]struct {
-		Protocols []string
-		Spec      configRedirectionSpec
-	})
-	for _, c := range cst.Main.cfg.Spec.Redirections {
-		for i, rule := range c.Spec.Rules {
-			switch rule.Type {
-			case "Regex":
-				r, err := regexp.Compile(rule.Expression)
-				if err != nil {
-					panic("hibas regex")
-					// TODO remove this rule and continue
+		for _, protocol := range protocols {
+			if configState.ParamPeeling == nil {
+				configState.ParamPeeling = make(map[string]paramPeelingByProtocols)
+			}
+			for _, param := range cfg.Spec.Params {
+				if configState.ParamPeeling[host] == nil {
+					configState.ParamPeeling[host] = make(map[string][]string)
 				}
-				c.Spec.Rules[i].Regexp = r
-			case "Hash":
+				configState.ParamPeeling[host][protocol] = append(configState.ParamPeeling[host][protocol], param)
+			}
+		}
+	}
+}
+
+func (configState *RedirectionConfigState) redirectionsConfigLoader(v *viper.Viper) {
+	cfg := &RedirectionsConfigYaml{}
+	err := v.Unmarshal(&cfg)
+	if err != nil {
+		// log.Fatalf("unable to decode into struct, %v", err)
+		// TODO: error handling
+		return
+	}
+
+	for _, host := range cfg.Spec.Hosts {
+		if configState.RedirectionHosts == nil {
+			configState.RedirectionHosts = make(map[string]redirectionRulesByProtcols)
+		}
+		var protocols []string
+		if len(cfg.Spec.Protocols) > 0 {
+			protocols = cfg.Spec.Protocols
+		} else {
+			protocols = []string{"http", "https"}
+		}
+
+		for _, protocol := range protocols {
+			if configState.RedirectionHosts[host] == nil {
+				configState.RedirectionHosts[host] = make(map[string][]RedirectionRule)
+			}
+			for _, rule := range cfg.Spec.Rules {
+				newRule := RedirectionRule{
+					Type:           rule.Type,
+					LogicName:      rule.LogicName,
+					HTTPStatusCode: rule.HTTPStatusCode,
+					// TargetsByURL:
+				}
+
+				if rule.RegexExpression != "" {
+					newRule.Regexp, err = regexp.Compile(rule.RegexExpression)
+					if err != nil {
+						continue // TODO: errorlog
+					}
+				}
+
+				if len(rule.TargetsByURL) > 0 {
+					hash := make(map[string]redirectionTarget)
+					for _, t := range rule.TargetsByURL {
+						hash[t.Src] = redirectionTarget{
+							Target:         t.Target,
+							HTTPStatusCode: t.HTTPStatusCode,
+						}
+					}
+					newRule.TargetsByURL = hash
+				}
 				if rule.FileURL != "" {
-					//TODO: Load csv file into hasmap
-					// Open CSV file
-					f, err := os.Open(rule.FileURL)
+					//load csv
+					hash, err := csvLoader(rule.FileURL)
 					if err != nil {
-						panic(err)
+						continue // TODO: errorlog
 					}
-					defer f.Close()
-					lines, err := csv.NewReader(f).ReadAll()
-					if err != nil {
-						panic(err)
-					}
-					// c.Spec.Rules[i].HashMap = make
-					// Loop through lines & turn into object
-					for _, line := range lines {
-						i, err := strconv.ParseInt(line[2], 10, 32)
-						if err != nil {
-							panic(err)
-						}
-						c.Spec.Rules[i].HashMap[line[0]] = struct {
-							Target         string `yaml:target,omitempty`
-							HTTPStatusCode int32  `yaml:httpStatusCode,omitempty`
-						}{
-							Target:         line[1],
-							HTTPStatusCode: int32(i),
-						}
-					}
+					newRule.TargetsByURL = hash
 				}
-			}
 
-		}
-		cst.Main.cfg.Spec.RedirectionHostHasmap[c.Host] = struct {
-			Protocols []string
-			Spec      configRedirectionSpec
-		}{
-			Protocols: c.Protocols,
-			Spec:      c.Spec,
+				configState.RedirectionHosts[host][protocol] = append(configState.RedirectionHosts[host][protocol], newRule)
+			}
 		}
 	}
+
 }
 
-type RuleType int
+func csvLoader(filename string) (map[string]redirectionTarget, error) {
+	hash := make(map[string]redirectionTarget)
+	//TODO: Open CSV file from url
+	f, err := os.Open(filename)
+	if err != nil {
+		return hash, err
+	}
+	defer f.Close()
+	lines, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		return hash, err
+	}
+	// c.Spec.Rules[i].HashMap = make
+	// Loop through lines & turn into object
+	for _, line := range lines {
 
-const (
-	RuleRegexp RuleType = iota
-	RuleHashTable
-	CustomLogic
-)
+		i, err := strconv.ParseInt(line[2], 10, 32)
+		if err != nil {
+			hash[line[0]] = redirectionTarget{
+				Target: line[1],
+			}
+		} else {
+			hash[line[0]] = redirectionTarget{
+				Target:         line[1],
+				HTTPStatusCode: int32(i), // TODO check
+			}
+		}
 
-type HashRule struct {
-	Target         string
-	HTTPStatusCode int32
+	}
+	return hash, nil
 }
-type HashRules map[string]HashRule
-
-type Rule struct {
-	Type                  RuleType `json:"name" yaml:"name"`
-	Methods               []string
-	HTTPHeaders           []string
-	Expression            string
-	LogicName             string
-	DefaultHTTPStatusCode int32
-	FilePath              string
-	HasmapRules           HashRules
-}
-type OrderedRules []Rule
-type HostsRules map[string]OrderedRules

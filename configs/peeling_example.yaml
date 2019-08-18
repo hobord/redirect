@@ -3,6 +3,8 @@ kind: ParampeelingConfig
 metadata:
   name: "example_config"
 spec:
+    hosts: ["888casino.com", "888poker.com"]
+    protocols: ["http", "https"]
     params: [
         "ftd",
         "lang"

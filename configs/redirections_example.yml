@@ -1,0 +1,25 @@
+apiVersion: RedirectionService/v1
+kind: RedirectionsConfig
+metadata:
+  name: "RedirectionsConfigExample"
+spec:
+  hosts: ["888casino.com", "888poker.com"]
+  protocols: ["http", "https"]
+  rules: 
+    - type: "Hash"
+      fileUrl: "hash.csv"
+    - type: "Hash"      
+      targetsByURL:
+        - src: https://888casino.com/blog
+          target: https://blog.888casino.com/
+          httpStatusCode: 302
+        - src: https://888sport.com/blog
+          target: https://blog.888sport.com/
+          httpStatusCode: 302
+    - type: "Regexp"
+      expression: "/http(s?):\\/\\/888poker.com\\/blog(.*)/"
+      target: https://blog.888sport.com/
+      httpStatusCode: 302
+    - type: "CustomLogic"
+      logicName: "MyFunctionName"
+  
