@@ -14,12 +14,6 @@ func TestConfigLoad(t *testing.T) {
 
 	// var runtime_viper = viper.New()
 
-	// runtime_viper.AddRemoteProvider("etcd", "http://127.0.0.1:4001","/config/hugo.yml")
-	// runtime_viper.AddSecureRemoteProvider("etcd","http://127.0.0.1:4001","/config/hugo.yaml","/etc/secrets/mykeyring.gpg")
-
-	// runtime_viper.SetConfigType("yml") // because there is no file extension in a stream of bytes, supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop", "env", "dotenv"
-	// err := runtime_viper.ReadRemoteConfig()
-
 	// runtime_viper.SetConfigFile("../config.yml")
 	// runtime_viper.SetConfigName("config")         // name of config file (without extension)
 	// runtime_viper.AddConfigPath("/etc/appname/")  // path to look for the config file in

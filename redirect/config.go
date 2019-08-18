@@ -13,6 +13,11 @@ import (
 )
 
 func (configState *RedirectionConfigState) loadConfigs(root string) {
+	// runtime_viper.AddRemoteProvider("etcd", "http://127.0.0.1:4001","/config/hugo.yml")
+	// runtime_viper.AddSecureRemoteProvider("etcd","http://127.0.0.1:4001","/config/hugo.yaml","/etc/secrets/mykeyring.gpg")
+
+	// runtime_viper.SetConfigType("yml") // because there is no file extension in a stream of bytes, supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop", "env", "dotenv"
+	// err := runtime_viper.ReadRemoteConfig()
 	if root == "" {
 		root = os.Getenv("COFIG_DIR")
 		if root == "" {
