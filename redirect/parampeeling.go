@@ -31,7 +31,7 @@ func ParamPeeling(ctx context.Context, configState *RedirectionConfigState, requ
 	query := u.Query()
 	peeled := false
 	for key := range query {
-		if parampeelingKeyCheck(key, u) == true {
+		if paramPeelingKeyCheck(configState, key, u) == true {
 			peeled = true
 			delete(query, key)
 		}
@@ -59,10 +59,16 @@ func ParamPeeling(ctx context.Context, configState *RedirectionConfigState, requ
 }
 
 // Param Peeling business logic to here
-func parampeelingKeyCheck(key string, u *url.URL) bool {
+func paramPeelingKeyCheck(configState *RedirectionConfigState, param string, u *url.URL) bool {
 	// TODO: Param Peeling business logic by url to here
-	if key == "toremove" {
-		return true
+	if host, ok := configState.ParamPeeling[u.Host]; ok {
+		if keys, ok := host[u.Scheme]; ok {
+			for _, key := range keys {
+				if param == key {
+					return true
+				}
+			}
+		}
 	}
 	return false
 }

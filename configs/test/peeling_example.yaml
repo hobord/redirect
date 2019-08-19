@@ -1,5 +1,5 @@
 apiVersion: RedirectionService/v1
-kind: ParampeelingConfig
+kind: ParamPeelingConfig
 metadata:
   name: "example_config"
 spec:

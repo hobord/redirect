@@ -57,7 +57,7 @@ func (configState *RedirectionConfigState) loadConfigs(root string) {
 			continue
 		}
 		switch cfgKind {
-		case "ParampeelingConfig":
+		case "ParamPeelingConfig":
 			configState.parampeelingConfigLoader(v)
 		case "RedirectionsConfig":
 			configState.redirectionsConfigLoader(v)

@@ -6,7 +6,7 @@ type metadataYaml struct {
 
 type ParamPeelingConfigYaml struct {
 	APIVersion string           `yaml:"apiVersion"` // RedirectionService/v1
-	Kind       string           `yaml:"kind"`       // ParampeelingConfig
+	Kind       string           `yaml:"kind"`       // ParamPeelingConfig
 	Metadata   metadataYaml     `yaml:"metadata"`
 	Spec       paramPeelingSpec `yaml:"spec,omitempty"`
 }
