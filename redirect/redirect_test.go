@@ -13,12 +13,21 @@ func TestApplyRedirectionRules(t *testing.T) {
 		urlstr               string
 		wantedLocation       string
 		wantedHttpStatusCode int32
+		desc                 string
 	}{
 		{
 			1,
-			"http://site.com/path/subpath/?foo=bar&toremove=xyz&other=ok",
-			"http://newsite.hu/path/subpath/?foo=bar&toremove=xyz&other=ok",
+			"http://site.com/path",
+			"http://newsite.hu/path",
+			307,
+			"Hash redirection test",
+		},
+		{
+			2,
+			"http://site.com/path/",
+			"http://newsite.hu/path",
 			200,
+			"Hash redirection test",
 		},
 	}
 	for _, testcase := range cases {
@@ -31,12 +40,8 @@ func TestApplyRedirectionRules(t *testing.T) {
 			Type:         "Hash",
 			TargetsByURL: make(map[string]redirectionTarget),
 		}
-		rule1.TargetsByURL["site.com"] = redirectionTarget{
-			Target:         "newsite.com",
-			HTTPStatusCode: 307,
-		}
-		rule1.TargetsByURL["site2.com"] = redirectionTarget{
-			Target:         "newsite.com",
+		rule1.TargetsByURL["http://site.com/path"] = redirectionTarget{
+			Target:         "http://newsite.hu/path",
 			HTTPStatusCode: 307,
 		}
 
@@ -48,8 +53,8 @@ func TestApplyRedirectionRules(t *testing.T) {
 		}
 		sessionValues := &session.Values{}
 
-		redirections := make(map[string]int32)
-		result, err := CalculateRedirections(ctx, configState, request, sessionValues, redirections)
+		// redirections := make(map[string]int32)
+		result, err := applyRedirectionRules(ctx, configState, request, sessionValues)
 		if err != nil {
 			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
 		}

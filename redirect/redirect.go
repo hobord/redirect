@@ -78,7 +78,7 @@ func applyRedirectionRules(ctx context.Context, configState *RedirectionConfigSt
 			for _, rule := range rules {
 				switch rule.Type {
 				case "Hash":
-					if redirectTo, found := rule.TargetsByURL[u.Host]; found {
+					if redirectTo, found := rule.TargetsByURL[u.String()]; found {
 						response.Location = redirectTo.Target
 						if redirectTo.HTTPStatusCode > 0 {
 							response.HttpStatusCode = redirectTo.HTTPStatusCode
