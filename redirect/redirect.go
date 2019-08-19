@@ -73,14 +73,6 @@ func applyRedirectionRules(ctx context.Context, configState *RedirectionConfigSt
 	}
 
 	// TODO: make businesslogic to here
-	if u.Host == "index.hu" {
-		u.Host = "444.hu"
-	} else if u.Host == "444.hu" {
-		u.Host = "888.hu"
-	}
-	response.Location = u.String()
-	response.HttpStatusCode = http.StatusTemporaryRedirect
-
 	if host, ok := configState.RedirectionHosts[u.Host]; ok {
 		if rules, ok := host[u.Scheme]; ok {
 			for _, rule := range rules {

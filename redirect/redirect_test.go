@@ -1,5 +1,5 @@
 package redirect
-/*
+
 import (
 	"context"
 	"testing"
@@ -7,6 +7,63 @@ import (
 	"github.com/hobord/infra/session"
 )
 
+func TestApplyRedirectionRules(t *testing.T) {
+	cases := []struct {
+		id                   int
+		urlstr               string
+		wantedLocation       string
+		wantedHttpStatusCode int32
+	}{
+		{
+			1,
+			"http://site.com/path/subpath/?foo=bar&toremove=xyz&other=ok",
+			"http://newsite.hu/path/subpath/?foo=bar&toremove=xyz&other=ok",
+			200,
+		},
+	}
+	for _, testcase := range cases {
+		ctx := context.Context(context.Background())
+		configState := &RedirectionConfigState{}
+		configState.RedirectionHosts = make(map[string]redirectionRulesByProtcols)
+		configState.RedirectionHosts["site.com"] = make(map[string][]RedirectionRule)
+
+		rule1 := RedirectionRule{
+			Type:         "Hash",
+			TargetsByURL: make(map[string]redirectionTarget),
+		}
+		rule1.TargetsByURL["site.com"] = redirectionTarget{
+			Target:         "newsite.com",
+			HTTPStatusCode: 307,
+		}
+		rule1.TargetsByURL["site2.com"] = redirectionTarget{
+			Target:         "newsite.com",
+			HTTPStatusCode: 307,
+		}
+
+		// rule2 := RedirectionRule{}
+		configState.RedirectionHosts["site.com"]["http"] = []RedirectionRule{rule1}
+
+		request := Request{
+			Url: testcase.urlstr,
+		}
+		sessionValues := &session.Values{}
+
+		redirections := make(map[string]int32)
+		result, err := CalculateRedirections(ctx, configState, request, sessionValues, redirections)
+		if err != nil {
+			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
+		}
+		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
+			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
+		}
+		if result.HttpStatusCode != 200 && result.Location != testcase.wantedLocation {
+			t.Errorf("Error with id: %v, wrong location restult: %v", testcase.id, result.Location)
+		}
+		t.Log(result)
+	}
+}
+
+/*
 func TestGetRedirection(t *testing.T) {
 	cases := []struct {
 		id                   int
