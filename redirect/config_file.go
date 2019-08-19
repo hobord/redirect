@@ -4,6 +4,7 @@ type metadataYaml struct {
 	Name string `yaml:"name"`
 }
 
+// ParamPeelingConfigYaml config in yaml
 type ParamPeelingConfigYaml struct {
 	APIVersion string           `yaml:"apiVersion"` // RedirectionService/v1
 	Kind       string           `yaml:"kind"`       // ParamPeelingConfig
@@ -17,6 +18,7 @@ type paramPeelingSpec struct {
 	Params    []string `yaml:"params"`
 }
 
+//RedirectionsConfigYaml config in yaml
 type RedirectionsConfigYaml struct {
 	APIVersion string                `yaml:"apiVersion"` // RedirectionService/v1
 	Kind       string                `yaml:"kind"`       // RedirectionsConfig

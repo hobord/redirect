@@ -29,9 +29,9 @@ func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessa
 	redirections := make(map[string]int32)
 
 	request := Request{
-		Url:         in.Url,
-		HttpMethod:  in.HttpMethod,
-		HttpHeaders: in.Headers,
+		URL:         in.Url,
+		HTTPMethod:  in.HttpMethod,
+		HTTPHeaders: in.Headers,
 		RequestID:   in.RequestID,
 		SessionID:   in.SessionID,
 	}
@@ -41,9 +41,9 @@ func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessa
 		return &response, err
 	}
 	r := ParamPeeling(ctx, s.configState, Request{
-		Url:         response.Location,
-		HttpMethod:  in.HttpMethod,
-		HttpHeaders: in.Headers,
+		URL:         response.Location,
+		HTTPMethod:  in.HttpMethod,
+		HTTPHeaders: in.Headers,
 		RequestID:   in.RequestID,
 		SessionID:   in.SessionID,
 	})

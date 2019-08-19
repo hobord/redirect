@@ -12,7 +12,7 @@ func TestApplyRedirectionRules(t *testing.T) {
 		id                   int
 		urlstr               string
 		wantedLocation       string
-		wantedHttpStatusCode int32
+		wantedHTTPStatusCode int32
 		desc                 string
 	}{
 		{
@@ -49,7 +49,7 @@ func TestApplyRedirectionRules(t *testing.T) {
 		configState.RedirectionHosts["site.com"]["http"] = []RedirectionRule{rule1}
 
 		request := Request{
-			Url: testcase.urlstr,
+			URL: testcase.urlstr,
 		}
 		sessionValues := &session.Values{}
 
@@ -58,8 +58,8 @@ func TestApplyRedirectionRules(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
 		}
-		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
-			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
+		if result.HttpStatusCode != testcase.wantedHTTPStatusCode {
+			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHTTPStatusCode, result.HttpStatusCode)
 		}
 		if result.HttpStatusCode != 200 && result.Location != testcase.wantedLocation {
 			t.Errorf("Error with id: %v, wrong location restult: %v", testcase.id, result.Location)
@@ -74,7 +74,7 @@ func TestGetRedirection(t *testing.T) {
 		id                   int
 		urlstr               string
 		wantedLocation       string
-		wantedHttpStatusCode int32
+		wantedHTTPStatusCode int32
 	}{
 		{
 			1,
@@ -93,8 +93,8 @@ func TestGetRedirection(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
 		}
-		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
-			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
+		if result.HttpStatusCode != testcase.wantedHTTPStatusCode {
+			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHTTPStatusCode, result.HttpStatusCode)
 		}
 		if result.HttpStatusCode != 200 && result.Location != testcase.wantedLocation {
 			t.Errorf("Error with id: %v, wrong location restult: %v", testcase.id, result.Location)
@@ -108,7 +108,7 @@ func TestCalculateRedirection(t *testing.T) {
 		id                   int
 		urlstr               string
 		wantedLocation       string
-		wantedHttpStatusCode int32
+		wantedHTTPStatusCode int32
 	}{
 		{
 			1,
@@ -129,8 +129,8 @@ func TestCalculateRedirection(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error in caed id: %v, %v", testcase.id, err)
 		}
-		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
-			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
+		if result.HttpStatusCode != testcase.wantedHTTPStatusCode {
+			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHTTPStatusCode, result.HttpStatusCode)
 		}
 		if result.HttpStatusCode != 200 && result.Location != testcase.wantedLocation {
 			t.Errorf("Error with id: %v, wrong location restult: %v", testcase.id, result.Location)

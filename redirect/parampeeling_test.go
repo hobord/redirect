@@ -38,7 +38,7 @@ func TestParamPeeling(t *testing.T) {
 		id                   int
 		url                  string
 		wantedLocation       string
-		wantedHttpStatusCode int32
+		wantedHTTPStatusCode int32
 	}{
 		{
 			1,
@@ -98,11 +98,11 @@ func TestParamPeeling(t *testing.T) {
 
 		ctx := context.Context(context.Background())
 		request := Request{
-			Url: testcase.url,
+			URL: testcase.url,
 		}
 		result := ParamPeeling(ctx, configState, request)
-		if result.HttpStatusCode != testcase.wantedHttpStatusCode {
-			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHttpStatusCode, result.HttpStatusCode)
+		if result.HttpStatusCode != testcase.wantedHTTPStatusCode {
+			t.Errorf("Error with id: %v, wrong status code result (wanted: %v, result %v)", testcase.id, testcase.wantedHTTPStatusCode, result.HttpStatusCode)
 		}
 
 		if result.HttpStatusCode != 200 && result.Location != testcase.wantedLocation {

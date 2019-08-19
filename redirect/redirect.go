@@ -8,10 +8,11 @@ import (
 	session "github.com/hobord/infra/session"
 )
 
+// Request representation
 type Request struct {
-	Url         string
-	HttpMethod  string
-	HttpHeaders map[string]string
+	URL         string
+	HTTPMethod  string
+	HTTPHeaders map[string]string
 	RequestID   string
 	SessionID   string
 }
@@ -20,7 +21,7 @@ type Request struct {
 func CalculateRedirections(ctx context.Context, configState *RedirectionConfigState, request Request, sessionValues *session.Values, redirections map[string]int32) (GetRedirectionResponse, error) {
 	//make business logic
 	response := GetRedirectionResponse{
-		Location:       request.Url,
+		Location:       request.URL,
 		HttpStatusCode: http.StatusOK,
 	}
 
@@ -47,9 +48,9 @@ func CalculateRedirections(ctx context.Context, configState *RedirectionConfigSt
 	redirectTo := Request{
 		SessionID:   request.SessionID,
 		RequestID:   request.RequestID,
-		Url:         response.Location,
-		HttpHeaders: request.HttpHeaders,
-		HttpMethod:  request.HttpMethod}
+		URL:         response.Location,
+		HTTPHeaders: request.HTTPHeaders,
+		HTTPMethod:  request.HTTPMethod}
 
 	r, err := CalculateRedirections(ctx, configState, redirectTo, sessionValues, redirections)
 	if err != nil {
@@ -63,11 +64,11 @@ func CalculateRedirections(ctx context.Context, configState *RedirectionConfigSt
 // applyRedirectionRules is apply the redirection rules
 func applyRedirectionRules(ctx context.Context, configState *RedirectionConfigState, request Request, sessionValues *session.Values) (GetRedirectionResponse, error) {
 	response := GetRedirectionResponse{
-		Location:       request.Url,
+		Location:       request.URL,
 		HttpStatusCode: http.StatusOK,
 	}
 
-	u, err := url.Parse(request.Url)
+	u, err := url.Parse(request.URL)
 	if err != nil {
 		return response, err
 	}

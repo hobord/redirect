@@ -10,7 +10,7 @@ import (
 func ParamPeeling(ctx context.Context, configState *RedirectionConfigState, request Request) GetRedirectionResponse {
 	response := GetRedirectionResponse{}
 
-	u, err := url.Parse(request.Url)
+	u, err := url.Parse(request.URL)
 	if err != nil {
 		response.HttpStatusCode = 200
 		return response

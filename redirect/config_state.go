@@ -2,6 +2,7 @@ package redirect
 
 import "regexp"
 
+//RedirectionConfigState config state
 type RedirectionConfigState struct {
 	RedirectionHosts map[string]redirectionRulesByProtcols // haskey by hostname: www.site.com
 	ParamPeeling     map[string]paramPeelingByProtocols
@@ -9,6 +10,7 @@ type RedirectionConfigState struct {
 
 type redirectionRulesByProtcols map[string][]RedirectionRule // haskeys http / https
 
+// RedirectionRule redirection rule in state
 type RedirectionRule struct {
 	Type           string
 	LogicName      string
