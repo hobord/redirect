@@ -12,7 +12,7 @@ import (
 type Request struct {
 	URL         string
 	HTTPMethod  string
-	HTTPHeaders map[string]string
+	HTTPHeaders map[string]*HttpHeader
 	RequestID   string
 	SessionID   string
 }
@@ -56,7 +56,9 @@ func CalculateRedirections(ctx context.Context, configState *RedirectionConfigSt
 	if err != nil {
 		return response, err
 	}
-	response = r
+	if r.HttpStatusCode != 200 {
+		response = r
+	}
 
 	return response, nil
 }

@@ -17,16 +17,15 @@ import (
 	"net"
 	"os"
 
+	pb "github.com/hobord/redirect/redirect"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	pb "github.com/hobord/redirect/redirect"
 )
 
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = ":50051"
+		port = ":50052"
 	}
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

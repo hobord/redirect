@@ -2,6 +2,7 @@ package redirect
 
 import (
 	"context"
+	"fmt"
 
 	session "github.com/hobord/infra/session"
 )
@@ -14,7 +15,7 @@ type GrpcServer struct {
 // CreateGrpcServer make an instace of GrpcServer
 func CreateGrpcServer() *GrpcServer {
 	configState := &RedirectionConfigState{}
-	configState.loadConfigs("")
+	configState.loadConfigs("configs")
 
 	srv := &GrpcServer{
 		configState: configState,
@@ -25,6 +26,7 @@ func CreateGrpcServer() *GrpcServer {
 
 // GetRedirection is implementing RedirectService rcp function
 func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessage) (*GetRedirectionResponse, error) {
+	fmt.Println("Get redirection: %v", in)
 	sessionValues := &session.Values{}
 	redirections := make(map[string]int32)
 
@@ -50,6 +52,6 @@ func (s *GrpcServer) GetRedirection(ctx context.Context, in *GetRedirectionMessa
 	if r.HttpStatusCode != 200 {
 		return &r, nil
 	}
-
+	fmt.Println("Response: %v", response)
 	return &response, err
 }
