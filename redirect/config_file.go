@@ -33,7 +33,7 @@ type configRedirectionSpec struct {
 		Type            string                  `yaml:"type"`
 		FileURL         string                  `yaml:"fileUrl,omitempty"`
 		TargetsByURL    []redirectionTargetYaml `yaml:"targetsByURL,omitempty"`
-		RegexExpression string                  `yaml:"expression,omitempty"`
+		RegexExpression string                  `yaml:"regexExpression,omitempty"`
 		LogicName       string                  `yaml:"logicName,omitempty"`
 		Target          string                  `yaml:"target,omitempty"`
 		HTTPStatusCode  int32                   `yaml:"httpStatusCode,omitempty"`

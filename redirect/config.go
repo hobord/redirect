@@ -133,6 +133,7 @@ func (configState *RedirectionConfigState) redirectionsConfigLoader(v *viper.Vip
 					if err != nil {
 						continue // TODO: errorlog
 					}
+					newRule.Target = rule.Target
 				}
 
 				if len(rule.TargetsByURL) > 0 {

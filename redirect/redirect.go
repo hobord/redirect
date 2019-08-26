@@ -91,7 +91,7 @@ func applyRedirectionRules(ctx context.Context, configState *RedirectionConfigSt
 						goto End
 					}
 				case "Regexp":
-					if rule.Regexp.MatchString(u.String()) {
+					if rule.Regexp != nil && rule.Regexp.MatchString(u.String()) {
 						response.Location = rule.Target
 						response.HttpStatusCode = rule.HTTPStatusCode
 						goto End

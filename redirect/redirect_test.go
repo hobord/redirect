@@ -2,6 +2,7 @@ package redirect
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/hobord/infra/session"
@@ -26,7 +27,7 @@ func TestApplyRedirectionRules(t *testing.T) {
 			2,
 			"http://site.com/path/",
 			"http://newsite.hu/path",
-			200,
+			307,
 			"Hash redirection test",
 		},
 	}
@@ -45,8 +46,17 @@ func TestApplyRedirectionRules(t *testing.T) {
 			HTTPStatusCode: 307,
 		}
 
-		// rule2 := RedirectionRule{}
-		configState.RedirectionHosts["site.com"]["http"] = []RedirectionRule{rule1}
+		r, err := regexp.Compile("http(s?):\\/\\/site.com\\/(.*)")
+		if err != nil {
+			t.Error(err) // TODO: errorlog
+		}
+		rule2 := RedirectionRule{
+			Type:           "Regexp",
+			Regexp:         r,
+			HTTPStatusCode: 307,
+			Target:         "http://newsite.hu/path",
+		}
+		configState.RedirectionHosts["site.com"]["http"] = []RedirectionRule{rule1, rule2}
 
 		request := Request{
 			URL: testcase.urlstr,

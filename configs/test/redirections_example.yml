@@ -5,24 +5,23 @@ metadata:
 spec:
   hosts: ["888casino.com", "888poker.com", "localhost:8100"]
   protocols: ["http", "https"]
-  rules: 
+  rules:
     - type: "Hash"
       fileUrl: "hash.csv"
-    - type: "Hash"      
+    - type: "Hash"
       targetsByURL:
         - src: https://888casino.com/blog
-          target: https://blog.888casino.com/
+          target: https://newblog.888casino.com/
           httpStatusCode: 302
         - src: https://888sport.com/blog
-          target: https://blog.888sport.com/
+          target: https://newblog.888sport.com/
           httpStatusCode: 302
         - src: http://localhost:8100/test
           target: https://www.888casino.com/blog/
           httpStatusCode: 302
-    # - type: "Regexp"
-    #   expression: "/http(s?):\\/\\/888poker.com\\/blog(.*)/"
-    #   target: https://blog.888sport.com/
-    #   httpStatusCode: 302
+    - type: "Regexp"
+      regexExpression: "http(s?):\\/\\/localhost:8100\\/blog(.*)"
+      target: https://newblog.888sport.com/
+      httpStatusCode: 302
     # - type: "CustomLogic"
     #   logicName: "MyFunctionName"
-  
