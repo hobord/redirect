@@ -19,7 +19,7 @@ func (configState *RedirectionConfigState) loadConfigs(root string) {
 	// runtime_viper.SetConfigType("yml") // because there is no file extension in a stream of bytes, supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop", "env", "dotenv"
 	// err := runtime_viper.ReadRemoteConfig()
 	if root == "" {
-		root = os.Getenv("COFIG_DIR")
+		root = os.Getenv("CONFIG_DIR")
 		if root == "" {
 			root = "config"
 		}
